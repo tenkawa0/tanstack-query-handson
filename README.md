@@ -115,8 +115,8 @@ const { data } = useQuery({
 これがキャッシュされていることによる恩恵になります。<br/>
 
 > 【参考】<br/>
-> ・Devtools：https://tanstack.com/query/latest/docs/framework/react/devtools<br/>
-> ・Query Keys：https://tanstack.com/query/latest/docs/framework/react/guides/query-keys
+> ・https://tanstack.com/query/latest/docs/framework/react/devtools<br/>
+> ・https://tanstack.com/query/latest/docs/framework/react/guides/query-keys
 
 <br/>
 
@@ -131,12 +131,12 @@ const { data } = useQuery({
 どう変わったのか http://localhost:3000/query/step3 を開いて確認してみましょう。<br/>
 
 一度データを取得したページを表示する際に、再度ローディング表示がでるようになっているのがわかります。<br/>
-これはキャッシュを参照した際に、そのキャッシュが`Inactive = データが古い`になっている場合はデータがリフェッチされるようになっているからです。<br/>
+これはページをレンダリングするときに、参照するキャッシュが`Stale = データが古い`になっている場合はデータがリフェッチされるようになっているからです。<br/>
 なのでページネーションは厳密にはキャッシュしてあるデータを画面に表示している裏で、データをリフェッチしているということです。<br/>
 
-キャッシュが`Inactive`と判定されるのは`staleTime`の設定が影響します。<br/>
+キャッシュが`Stale`と判定されるのは`staleTime`の設定が影響します。<br/>
 `staleTime`はデフォルトで 0 秒と設定されています。<br/>
-つまりデータをフェッチしてキャッシュされた時点で、そのデータは`Inactive = 古いデータ`となります。<br/>
+つまりデータをフェッチしてキャッシュされた時点で、そのデータは`Stale = 古いデータ`となります。<br/>
 
 🤔🤔🤔
 
@@ -158,10 +158,12 @@ const { data } = useQuery({
 });
 ```
 
-ちなみに`QueryClient`に`staleTime`を設定すれば、すべての`useQuery`に`staleTime`を適用することも可能なので、一律で設定してする手もあります。
+ちなみに`QueryClient`に`staleTime`を設定すれば、すべての`useQuery`に`staleTime`を適用することも可能なので、一律で設定してする手もあります。<br/>
+また、ページを切り替えて参照されなくなったキャッシュは`Inactive`という状態になり、こちらは`cacheTime(デフォルト5分)`が過ぎるとキャッシュから削除されます。<br/>
+`staleTime`と`cacheTime`については理解が難しいので、TanStack Query に慣れてきた頃に復習するのがおすすめです。
 
 > 【参考】<br/>
-> ・QueryClient：https://tanstack.com/query/latest/docs/reference/QueryClient
+> ・https://tanstack.com/query/latest/docs/reference/QueryClient
 
 <br/>
 
@@ -182,13 +184,112 @@ const { data } = useQuery({
 そこでおすすめなのが以下の記事で紹介されている方法です。<br/>
 https://tkdodo.eu/blog/effective-react-query-keys
 
-## Todo の追加・更新・削除（Mutation）
+## Todo の更新（Mutation）
 
-## 参考情報
+このパートでは TanStack Query でのデータ更新方法を理解します。<br />
+まずは完成形のアプリを確認しましょう。以下の URL にアクセスしてください。
 
-- https://tkdodo.eu/blog/practical-react-query
-  - TanStack Query を使いこなすための Tips が様々紹介されています
-  - TanStack Query を使ってて「これどうするのがいいんだ？」って思ってたら真っ先に参照してほしい情報です
-- https://query.gg/
-  - TanStack Query 公式が学習コースを制作中です、気になる方は是非チェック
-  - 上記ブログの著者が関わっているので公開前から信頼感がすごい、はやく公開してほしい
+http://localhost:3000/mutation
+
+完成形のソースコードは `src/work/mutation/sample`を参照してください。
+この完成形を目指して順番にデータ更新方法を理解していきます。
+
+<br/>
+
+### step.1）useMutation の使い方
+
+> このパートでは `src/work/mutation/step1/components/TodoAddForm/index.tsx`を編集します。<br/>
+> 以下の URL 実際の動作確認ができるようになっています。<br/>
+> http://localhost:3000/mutation/step1
+
+データ更新には、TanStack Query の`useMutation`を使用します。<br />
+基本的な使い方は以下の通り。<br/>
+実際に Todo の追加処理を実装してみましょう。
+
+```jsx
+const { mutate, isPending } = useMutation({
+  mutationFn: async ({ body }: Variables) => {
+    const { data } = await axios.post("/api/todos", body);
+    return data;
+  },
+});
+
+const handleSubmit = (variables: Variables) => {
+  mutate(variables);
+};
+```
+
+`useMutation`は、`mutationFn`でデータの更新処理を定義し,データ更新を実行したいタイミングで`mutate`を呼び出すようにします。<br/>
+`useQuery`同様`isPending`でデータの更新中かを確認できるようになっています。
+
+しかし、上記だけでは Todo の追加はできてもデータの表示が更新されません。<br/>
+それについては次のパートで説明します。
+
+> 【参考】<br/>
+> ・https://tanstack.com/query/latest/docs/framework/react/guides/mutations<br/>
+> ・https://tanstack.com/query/latest/docs/framework/react/reference/useMutation
+
+<br/>
+
+### step.2）invalidateQueries の使い方
+
+> このパートでは `src/work/mutation/step2/components/TodoAddForm/index.tsx`を編集します。<br/>
+> 以下の URL 実際の動作確認ができるようになっています。<br/>
+> http://localhost:3000/mutation/step2
+
+データ取得の際に、キャッシュの状態が`Stale`なときにデータがリフェッチされると説明しました。<br/>
+その他にも`invalidateQueries`を用いることで、指定した`queryKey`のキャッシュをリフェッチすることができます。<br/>
+実際に Todo のリフェッチ処理を実装してみましょう。
+
+```jsx
+const queryClient = useQueryClient();
+const { mutate, isPending } = useMutation({
+  mutationFn: async ({ body }: Variables) => {
+    const { data } = await axios.post("/api/todos", body);
+    return data;
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["todos"] });
+  },
+});
+```
+
+上記の追加で確かにデータの表示が更新されるようになりましたが、更新完了からデータのリフェッチまでにラグがあるため、一瞬 UI がフリーズしたかのように感じてしまいますね。<br/>
+なので、`isFetching`を使ってリフェッチ中であることがわかるように修正してみましょう。
+
+```jsx
+const { data, isFetching } = useQuery(...);
+```
+
+以上、データ更新のやりかたが分かったところで、最後に Todo の完了・削除も実装してみましょう。
+
+> 【参考】<br/>
+> ・https://tanstack.com/query/latest/docs/framework/react/guides/query-invalidation
+
+<br/>
+
+### Tips
+
+#### レスポンスを使ったキャッシュの更新
+
+キャッシュは`queryKey`を指定して、手動で内容を更新することが可能です。<br/>
+これを応用すれば、POST や PUT でデータ更新した際のレスポンスデータを使ってキャッシュを更新できます。
+詳しくは以下のドキュメントで解説されています。<br/>
+https://tanstack.com/query/latest/docs/framework/react/guides/updates-from-mutation-responses
+
+この手法を用いれば、データ更新後のリフェッチを行う必要がないため、より早く UI のデータ表示を更新することが可能になるため、ユーザー体験の向上につながるのですが、コーディングミスによる不具合も埋め込みやすくなります。<br/>
+今まではデータ更新をしたらとりあえずリフェッチしていればよかったところが、キャッシュで管理しているデータのうち、どの`queryKey`のどのプロパティを変更すればいいのか等、システムの仕様に精通していないと実装が困難になる場面に出くわします。
+
+#### Optimistic Updates(楽観更新)
+
+こちらはレスポンスを使ったキャッシュの更新より、さらにアグレッシブにキャッシュの内容を書き換える方法です。<br/>
+例えばアイテムを削除した場合、削除のレスポンスが帰って来る前に、削除したアイテムをキャッシュから消してしまうといった処理になります。<br/>
+詳しくは以下のドキュメントで解説されています。<br/>
+https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates
+
+こちらは更新時のレスポンスを待たないため、非常にキビキビ UI が動作しているような挙動になるのですが、いざエラーが発生したときの表示がとても難しいです。<br/>
+
+本来なら「データ更新 -> ローディング -> エラー」と動機的に処理されるので、いまやった操作がうまくいかなかったことがわかるのですが、楽観更新の場合は「データ更新 -> データ表示の更新 -> (...しばらくたって) -> エラー」という流れになります。<br/>
+このエラーが表示されるまでの間に、他のデータ更新も行う可能性があるので、エラーが発生した場合どの操作に対するエラーなのか、どこまでの処理をロールバックするのかといった対応が必要になり、実装の複雑度がとても上がります。<br/>
+
+ただ使いこなした場合は、とてもストレスフリーな操作感をユーザーに提供できるポテンシャルをもっているため、是非とも触ってみてください。

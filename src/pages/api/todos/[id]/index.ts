@@ -1,24 +1,26 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
 
-import { getTodos } from "./getTodos";
-import { postTodos } from "./postTodos";
+import { patchTodo } from "./patchTodo";
+import { deleteTodo } from "./deleteTodo";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
   const { method, query, body } = req;
 
   switch (method) {
-    case "GET": {
+    case "PATCH": {
       (async () => {
-        const response = await getTodos(query);
+        const id = query.id as string;
+        const response = await patchTodo(id, body);
         res.status(200).json(response);
       })();
       break;
     }
-    case "POST": {
+    case "DELETE": {
       (async () => {
-        const response = await postTodos(body);
-        res.status(201).json(response);
+        const id = query.id as string;
+        const response = await deleteTodo(id);
+        res.status(200).json(response);
       })();
       break;
     }

@@ -1,11 +1,11 @@
 import React, { useState } from "react";
+import { Box, Stack } from "@mui/material";
 
 import { useTodos } from "../../api/getTodos";
-import _TodoList from "@/components/TodoList";
 import ErrorAlert from "@/components/ErrorAlert";
 import Loading from "@/components/Loading";
 import Pagination from "@/components/Pagination";
-import { Box, Stack } from "@mui/material";
+import TodoListContainer from "./TodoListContainer";
 
 export default function TodoList() {
   const [page, setPage] = useState(1);
@@ -24,16 +24,11 @@ export default function TodoList() {
 
   return (
     <Stack spacing={1}>
-      <_TodoList
-        todos={data.items}
-        isLoading={false}
-        handleChangeStatus={() => alert("未実装")}
-        handleDelete={() => alert("未実装")}
-      />
+      <TodoListContainer todos={data.items} />
       <Box sx={{ alignSelf: "flex-end" }}>
         <Pagination
-          hasPrev={data.hasPrev}
-          hasNext={data.hasNext}
+          hasPrev={!!data?.hasPrev}
+          hasNext={!!data?.hasNext}
           handlePrev={() => setPage((prev) => prev - 1)}
           handleNext={() => setPage((prev) => prev + 1)}
         />

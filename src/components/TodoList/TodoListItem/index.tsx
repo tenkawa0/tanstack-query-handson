@@ -6,12 +6,14 @@ import { Todo } from "@/types";
 
 type Props = {
   todo: Todo;
+  isLoading: boolean;
   handleChangeStatus: (item: Todo) => void;
   handleDelete: (item: Todo) => void;
 };
 
 export default function TodoListItem({
   todo,
+  isLoading,
   handleChangeStatus,
   handleDelete,
 }: Props) {
@@ -28,6 +30,7 @@ export default function TodoListItem({
           edge="end"
           onClick={() => handleDelete(todo)}
           aria-label="削除"
+          disabled={isLoading}
         >
           <Delete fontSize="small" />
         </IconButton>
@@ -39,14 +42,15 @@ export default function TodoListItem({
         checked={isDone}
         inputProps={{ "aria-labelledby": labelId }}
         onChange={() => handleChangeStatus(todo)}
+        disabled={isLoading}
       />
       <ListItemText
         id={labelId}
         primary={!isDone ? todo.title : <del>{todo.title}</del>}
-        {...(isDone && {
+        {...((isDone || isLoading) && {
           sx: { color: "action.disabled" },
         })}
       />
     </ListItem>
   );
-};
+}

@@ -1,15 +1,15 @@
 import React, { useState } from "react";
+import { Stack, Typography } from "@mui/material";
 
 import { useTodos } from "../../api/getTodos";
-import _TodoList from "@/components/TodoList";
 import ErrorAlert from "@/components/ErrorAlert";
 import Loading from "@/components/Loading";
 import Pagination from "@/components/Pagination";
-import { Box, Stack } from "@mui/material";
+import TodoListContainer from "./TodoListContainer";
 
 export default function TodoList() {
   const [page, setPage] = useState(1);
-  const { data, isPending, isError } = useTodos({
+  const { data, isPending, isError, isFetching } = useTodos({
     query: { page },
     staleTime: 10 * 1000,
   });
@@ -24,20 +24,24 @@ export default function TodoList() {
 
   return (
     <Stack spacing={1}>
-      <_TodoList
-        todos={data.items}
-        isLoading={false}
-        handleChangeStatus={() => alert("未実装")}
-        handleDelete={() => alert("未実装")}
-      />
-      <Box sx={{ alignSelf: "flex-end" }}>
+      <TodoListContainer todos={data.items} />
+      <Stack direction="row" justifyContent="space-between" alignItems="center">
+        <Typography
+          variant="caption"
+          sx={{
+            color: "text.secondary",
+            visibility: isFetching ? "visible" : "hidden",
+          }}
+        >
+          データ更新中...
+        </Typography>
         <Pagination
           hasPrev={data.hasPrev}
           hasNext={data.hasNext}
           handlePrev={() => setPage((prev) => prev - 1)}
           handleNext={() => setPage((prev) => prev + 1)}
         />
-      </Box>
+      </Stack>
     </Stack>
   );
 }

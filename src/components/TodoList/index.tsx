@@ -6,12 +6,14 @@ import TodoListItem from "./TodoListItem";
 
 type Props = {
   todos: Todo[];
+  isLoading: boolean;
   handleChangeStatus: (item: Todo) => void;
   handleDelete: (item: Todo) => void;
 };
 
 export default function TodoList({
   todos,
+  isLoading,
   handleChangeStatus,
   handleDelete,
 }: Props) {
@@ -24,6 +26,7 @@ export default function TodoList({
               <TodoListItem
                 key={item.id}
                 todo={item}
+                isLoading={isLoading}
                 handleChangeStatus={handleChangeStatus}
                 handleDelete={handleDelete}
               />
@@ -40,4 +43,4 @@ export default function TodoList({
       </Fade>
     </SwitchTransition>
   );
-};
+}

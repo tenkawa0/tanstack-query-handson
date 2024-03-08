@@ -12,8 +12,9 @@ export default function TodoList() {
   return (
     <_TodoList
       todos={[]}
+      isLoading={false}
       handleChangeStatus={() => alert("未実装")}
       handleDelete={() => alert("未実装")}
     />
   );
-};
+}

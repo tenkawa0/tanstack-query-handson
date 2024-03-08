@@ -32,6 +32,7 @@ export default function TodoList() {
     <Stack spacing={1}>
       <_TodoList
         todos={data.items}
+        isLoading={false}
         handleChangeStatus={() => alert("未実装")}
         handleDelete={() => alert("未実装")}
       />

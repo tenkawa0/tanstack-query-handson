@@ -9,7 +9,7 @@ export default function MutationSample() {
       <Stack alignItems="center">
         <Typography variant="h1">Todo List</Typography>
         <Typography variant="h2" sx={{ color: "text.secondary" }}>
-          データ取得完成
+          データ更新完成
         </Typography>
       </Stack>
       <Stack sx={{ maxWidth: "sm", width: "100%" }} spacing={1}>

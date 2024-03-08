@@ -4,7 +4,6 @@ import { setTimeout } from "timers/promises";
 
 export type Query = {
   page?: number;
-  size?: number;
 };
 
 export type Response = {
@@ -14,8 +13,17 @@ export type Response = {
   items: Todo[];
 };
 
-function paginate(items: any[], query: Query) {
-  const { page = 1, size = 5 } = query;
+function paginate(items: any[], { page }: Query) {
+  if (!page) {
+    return {
+      hasPrev: false,
+      hasNext: false,
+      total: items.length,
+      items: items,
+    };
+  }
+
+  const size = 5;
   const offset = size * (page - 1);
   const totalPages = Math.ceil(items.length / size);
   return {
