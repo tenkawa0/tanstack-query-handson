@@ -5,8 +5,8 @@ import { Query, Response } from "@/pages/api/todos/getTodos";
 
 type Options = QueryOptions<Response> & { query?: Query };
 
-async function getTodos({ page, size }: Query = {}): Promise<Response> {
-  const { data } = await axios.get("/api/todos", { params: { page, size } });
+async function getTodos({ page }: Query = {}): Promise<Response> {
+  const { data } = await axios.get("/api/todos", { params: { page } });
   return data;
 }
 
