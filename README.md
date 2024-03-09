@@ -29,6 +29,7 @@ npm run dev
     - `api/todos`：Todo の取得・追加・更新・削除を提供する API を実装
   - `types`：型定義
   - `work`：ハンズオンで使用するディレクトリ
+  - `extra`：LT 用の資料（時間が余ったら）
 
 ## Todo の取得（Query）
 
