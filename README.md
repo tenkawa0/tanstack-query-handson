@@ -184,6 +184,8 @@ const { data } = useQuery({
 そこでおすすめなのが以下の記事で紹介されている方法です。<br/>
 https://tkdodo.eu/blog/effective-react-query-keys
 
+<br/>
+
 ## Todo の更新（Mutation）
 
 このパートでは TanStack Query でのデータ更新方法を理解します。<br />
@@ -293,6 +295,8 @@ https://tanstack.com/query/latest/docs/framework/react/guides/optimistic-updates
 このエラーが表示されるまでの間に、他のデータ更新も行う可能性があるので、エラーが発生した場合どの操作に対するエラーなのか、どこまでの処理をロールバックするのかといった対応が必要になり、実装の複雑度がとても上がります。<br/>
 
 ただ使いこなした場合は、とてもストレスフリーな操作感をユーザーに提供できるポテンシャルをもっている機能です。
+
+<br/>
 
 ## さいごに
 
